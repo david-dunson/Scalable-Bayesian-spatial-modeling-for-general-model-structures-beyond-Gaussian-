@@ -1,8 +1,7 @@
 #define ARMA_DONT_PRINT_ERRORS
 
 #include "model_glm.h"
-#include "model_alts.h"
-#include "simpa_step.h"
+#include "simpa.h"
 
 //[[Rcpp::export]]
 Rcpp::List posterior_sampling(const arma::vec& y, 
