@@ -3,12 +3,16 @@ library(magrittr)
 library(ggplot2)
 library(dplyr)
 
-#set.seed(1)
+set.seed(1)
 nr <- 50
 p <- 6
 beta <- rnorm(p)
-X <- rnorm(p * nr) %>% matrix(ncol=p)
-tau <- 1
+
+# make correlated covariates
+xgrid <- runif(p*2) %>% matrix(ncol=2)
+X <- mvtnorm::rmvnorm(nr, rep(0, p), exp(-as.matrix(dist(xgrid))))
+# make uncorrelated covariates
+# X <- rnorm(p * nr) %>% matrix(ncol=p)
 
 #expmu <- 1/(1+exp( - X %*% beta ))
 expmu <- exp( X %*% beta )
@@ -20,29 +24,23 @@ y <- #rbinom(nr, 1, expmu)
 # 2 binomial
 
 system.time({
-  simpa_out <- posterior_sampling(y, X, tau, 1, 50000, 5000) 
+  simpa_out <- posterior_sampling(y, X, 1, 1, 5000, 500) 
 })
 
 beta_mcmc <- simpa_out$beta
 eps_mcmc <- simpa_out$eps
 M_mcmc <- simpa_out$M
 
+# show how preconditioner is being adapted
 M_mcmc[2,1,] %>% plot(type='l')
-M_mcmc[2,1,] %>% tail(1000) %>% diff() %>% magrittr::equals(0) %>% mean()
+# step size adaptation via dual averaging
 eps_mcmc %>% plot(type='l')
+# Markov chains for regression coefficients
+df <- beta_mcmc %>% t() %>% as.data.frame() %>%
+  mutate(m = 1:n()) %>%
+  tidyr::gather(variable, chain, -m)
 
-beta_mcmc[2,] %>% #tail(5000) %>% 
-  plot(type='l')
-beta_mcmc %>% apply(1, \(x) coda::effectiveSize(tail(x, 2000)))
-beta_mcmc %>% apply(1, mean)
-
-glmobj <- glm(y ~ X-1, family="poisson")
-stats::vcov(glmobj)
-
-
-df_chain <- beta_mcmc %>% t() %>% as.data.frame()
-
-df_chain %>% mutate(n=1:n()) %>% 
-  head(50) %>% 
-  ggplot(aes(V1, V2)) +
-  geom_text(aes(label=n))
+ggplot(df, aes(m, chain)) +
+  geom_line() + 
+  facet_wrap(~ variable, scales="free") +
+  theme_minimal()

@@ -10,10 +10,10 @@ Rcpp::List posterior_sampling(const arma::vec& y,
                               int mcmc = 100, int print_every=100){
 
   int p = X.n_cols;
-  arma::mat beta_mcmc = arma::zeros(p, mcmc);
-  
   arma::vec beta = arma::zeros(p);
   
+  // store results
+  arma::mat beta_mcmc = arma::zeros(p, mcmc);
   arma::cube M_mcmc = arma::zeros(p,p,mcmc);
   arma::vec eps_mcmc = arma::zeros(mcmc);
   
@@ -24,7 +24,6 @@ Rcpp::List posterior_sampling(const arma::vec& y,
   GLMmodel model(y, X, tau, family);
   
   for(int m = 0; m<mcmc; m++){
-    //Rcpp::Rcout << beta_adapt.eps << endl;
     beta = simpa_step(beta, model, beta_adapt, false);
     
     beta_mcmc.col(m) = beta;
