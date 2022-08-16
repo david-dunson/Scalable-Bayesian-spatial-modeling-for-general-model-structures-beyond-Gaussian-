@@ -1,0 +1,11 @@
+Package: simpa
+Type: Package
+Title: MCMC sampling via the Simplified Manifold Preconditioner Adaptation algorithm
+Version: 1.0
+Date: 2022-08-16
+Author: Michele Peruzzi
+Maintainer: Michele Peruzzi <michele.peruzzi@duke.edu>
+Description: SiMPA is an adaptive Langevin algorithm for sampling from multidimensional densities which builds a constant preconditioner via second order information about the target.
+License: GPL (>= 3)
+Imports: Rcpp (>= 1.0.7)
+LinkingTo: Rcpp, RcppArmadillo
